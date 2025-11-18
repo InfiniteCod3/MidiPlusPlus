@@ -929,6 +929,11 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_CREATE:
     {
+        HDC sdc = GetDC(hWnd);
+        double s = 1.0;
+        if (sdc) { s = static_cast<double>(GetDeviceCaps(sdc, LOGPIXELSX)) / 96.0; ReleaseDC(hWnd, sdc); }
+        auto SX = [&](int v) { return static_cast<int>(v * s); };
+        auto SY = [&](int v) { return static_cast<int>(v * s); };
         INITCOMMONCONTROLSEX icex = {};
         icex.dwSize = sizeof(icex);
         icex.dwICC = ICC_BAR_CLASSES;
@@ -1225,29 +1230,56 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         g_trackControl.Create(hWnd, Layout::TRK_X, Layout::TRK_Y, Layout::TRK_W, Layout::TRK_H - 2);
 
         // Log Group
+        int logX = SX(Layout::LOG_X);
+        int logY = SY(Layout::LOG_Y);
+        int logW = SX(Layout::LOG_W);
+        int logH = SY(Layout::LOG_H);
+        RECT rcClient{}; GetClientRect(hWnd, &rcClient);
+        int margin = SY(10);
+        if (logY + logH > rcClient.bottom - margin) {
+            int minH = SY(110);
+            int fitH = rcClient.bottom - margin - logY;
+            logH = (fitH > minH ? fitH : minH);
+        }
         CreateWindowW(L"button", L"Log",
             WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-            Layout::LOG_X, Layout::LOG_Y, Layout::LOG_W, Layout::LOG_H,
+            logX, logY, logW, logH,
             hWnd, reinterpret_cast<HMENU>(ID_GRP_LOG), g_hInst, nullptr);
+        int rightColW = SX(80);
+        int editW = logW - rightColW - SX(30);
+        int editH = logH - SY(30);
         HWND editLog = CreateWindowW(L"edit", L"",
             WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | WS_VSCROLL | WS_BORDER,
-            Layout::LOG_X + 10, Layout::LOG_Y + 20, Layout::LOG_W - 100, Layout::LOG_H - 30,
+            logX + SX(10), logY + SY(20), editW, editH,
             hWnd, reinterpret_cast<HMENU>(ID_EDIT_LOG), g_hInst, nullptr);
-        CreateWindowW(L"button", L"Clear Log",
+        int btnX = logX + logW - rightColW;
+        int btnH = SY(25);
+        int btnW = SX(70);
+        int btnCount = 4;
+        int buttonsTotal = btnCount * btnH;
+        int freeSpace = (editH - buttonsTotal);
+        if (freeSpace < SY(5)) freeSpace = SY(5);
+        int gap = freeSpace / (btnCount - 1);
+        if (gap < SY(5)) gap = SY(5);
+        int btnY = logY + SY(25);
+        HWND hBtnClear = CreateWindowW(L"button", L"Clear Log",
             WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-            Layout::LOG_X + Layout::LOG_W - 80, Layout::LOG_Y + 25, 70, 25,
+            btnX, btnY, btnW, btnH,
             hWnd, reinterpret_cast<HMENU>(ID_BTN_CLEARLOG), g_hInst, nullptr);
-        CreateWindowW(L"button", L"Refresh MIDI",
+        btnY += btnH + gap;
+        HWND hBtnRefMIDI = CreateWindowW(L"button", L"Refresh MIDI",
             WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-            Layout::LOG_X + Layout::LOG_W - 80, Layout::LOG_Y + 55, 70, 25,
+            btnX, btnY, btnW, btnH,
             hWnd, reinterpret_cast<HMENU>(ID_BTN_REFRESH_MIDI), g_hInst, nullptr);
-        CreateWindowW(L"button", L"Edit V-Curve",
+        btnY += btnH + gap;
+        HWND hBtnVCurve = CreateWindowW(L"button", L"Edit V-Curve",
             WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-            Layout::LOG_X + Layout::LOG_W - 80, Layout::LOG_Y + 85, 70, 25,
+            btnX, btnY, btnW, btnH,
             hWnd, reinterpret_cast<HMENU>(ID_BTN_VLCURVE), g_hInst, nullptr);
-        CreateWindowW(L"button", L"Ref V-List",
+        btnY += btnH + gap;
+        HWND hBtnRefVList = CreateWindowW(L"button", L"Ref V-List",
             WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-            Layout::LOG_X + Layout::LOG_W - 80, Layout::LOG_Y + 115, 70, 25,
+            btnX, btnY, btnW, btnH,
             hWnd, reinterpret_cast<HMENU>(ID_BTN_REFRESH_VCURVE), g_hInst, nullptr);
 
         // Initialize Toggle States
@@ -2177,12 +2209,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int) {
     wc.hIcon = hIcon;
     wc.hIconSm = hIconSmall;
     RegisterClassExW(&wc);
+    HDC sdcMain = GetDC(nullptr);
+    double sMain = 1.0;
+    if (sdcMain) { sMain = static_cast<double>(GetDeviceCaps(sdcMain, LOGPIXELSX)) / 96.0; ReleaseDC(nullptr, sdcMain); }
+    int winW = static_cast<int>(Layout::WIN_W * sMain);
+    int winH = static_cast<int>(Layout::WIN_H * sMain);
     g_hMainWnd = CreateWindowExW(WS_EX_APPWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST,
         wc.lpszClassName,
         L"MIDI++ v1.0.4.R5",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT,
-        Layout::WIN_W, Layout::WIN_H,
+        winW, winH,
         nullptr,
         nullptr,
         hInstance,

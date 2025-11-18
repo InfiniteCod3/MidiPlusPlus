@@ -155,7 +155,7 @@ bool MIDIConnect::OptimizeSystem() {
     timeGetDevCaps(&tc, sizeof(TIMECAPS));
     s_timerResolution = std::min(std::max(tc.wPeriodMin, (UINT)1), tc.wPeriodMax);
     timeBeginPeriod(s_timerResolution);
-    SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
     if (HANDLE hProcess = GetCurrentProcess()) {
         const ULONG EXECUTION_SPEED_MASK = 0x1;
@@ -209,7 +209,6 @@ void MIDIConnect::SetCallbackThreadPriority() {
 
     DWORD_PTR systemMask;
     if (GetProcessAffinityMask(GetCurrentProcess(), &s_originalAffinity, &systemMask)) {
-        SetThreadAffinityMask(GetCurrentThread(), 1); // Pin to first core - lowest latency
     }
 
     typedef enum _THREADINFOCLASS {
