@@ -94,7 +94,7 @@ static bool g_randomSongEnabled = false;
 namespace Layout {
     // Window dimensions
     static const int WIN_W = 880;
-    static const int WIN_H = 760;
+    static const int BOTTOM_MARGIN = 40;
 
     // MIDI Files group
     static const int FILES_X = 10;
@@ -135,7 +135,7 @@ namespace Layout {
     static const int LEGIT_X = 260;
     static const int LEGIT_Y = CFG_Y + CFG_H + 5;
     static const int LEGIT_W = 600;
-    static const int LEGIT_H = 90;
+    static const int LEGIT_H = 120;
 
     // Details group
     static const int DET_X = 260;
@@ -154,6 +154,7 @@ namespace Layout {
     static const int LOG_Y = TRK_Y + TRK_H + 10;
     static const int LOG_W = 850;
     static const int LOG_H = 150;
+    static const int WIN_H = LOG_Y + LOG_H + BOTTOM_MARGIN;
 }
 
 // Global sustain cutoff value box (edit control)
@@ -1162,53 +1163,44 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             hWnd, reinterpret_cast<HMENU>(ID_GRP_LEGIT), g_hInst, nullptr);
         HWND hChkLegit = CreateWindowW(L"button", L"Enable Legit",
             WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-            Layout::LEGIT_X + 10, Layout::LEGIT_Y + 25, 120, 20,
+            Layout::LEGIT_X + 10, Layout::LEGIT_Y + 25, 140, 20,
             hWnd, reinterpret_cast<HMENU>(ID_CHK_LEGIT_ENABLE), g_hInst, nullptr);
         SendMessage(hChkLegit, BM_SETCHECK, midi::Config::getInstance().legit.ENABLED ? BST_CHECKED : BST_UNCHECKED, 0);
 
-        CreateWindowW(L"static", L"Delay Chance:", WS_CHILD | WS_VISIBLE,
-            Layout::LEGIT_X + 140, Layout::LEGIT_Y + 25, 90, 20,
-            hWnd, nullptr, g_hInst, nullptr);
-        HWND hEditDelayChance = CreateWindowExW(WS_EX_CLIENTEDGE, L"edit", L"",
-            WS_CHILD | WS_VISIBLE | ES_CENTER,
-            Layout::LEGIT_X + 230, Layout::LEGIT_Y + 25, 60, 20,
-            hWnd, reinterpret_cast<HMENU>(ID_EDIT_LEGIT_DELAY_CHANCE), g_hInst, nullptr);
+        const int legitBaseY = Layout::LEGIT_Y + 25;
+        const int legitRowHeight = 26;
+        const int legitRowGap = 8;
+        const int legitLabelHeight = 20;
+        const int legitEditHeight = 22;
+        const int legitColX[] = {
+            Layout::LEGIT_X + 140,
+            Layout::LEGIT_X + 330,
+            Layout::LEGIT_X + 520
+        };
 
-        CreateWindowW(L"static", L"Skip Chance:", WS_CHILD | WS_VISIBLE,
-            Layout::LEGIT_X + 300, Layout::LEGIT_Y + 25, 90, 20,
-            hWnd, nullptr, g_hInst, nullptr);
-        HWND hEditSkipChance = CreateWindowExW(WS_EX_CLIENTEDGE, L"edit", L"",
-            WS_CHILD | WS_VISIBLE | ES_CENTER,
-            Layout::LEGIT_X + 390, Layout::LEGIT_Y + 25, 60, 20,
-            hWnd, reinterpret_cast<HMENU>(ID_EDIT_LEGIT_SKIP_CHANCE), g_hInst, nullptr);
+        auto createLegitField = [&](int columnIndex, int rowIndex,
+            const wchar_t* labelText, int labelWidth, int editWidth, int controlId) -> HWND {
+                int x = legitColX[columnIndex];
+                int y = legitBaseY + rowIndex * (legitRowHeight + legitRowGap);
+                CreateWindowW(L"static", labelText, WS_CHILD | WS_VISIBLE,
+                    x, y, labelWidth, legitLabelHeight,
+                    hWnd, nullptr, g_hInst, nullptr);
+                return CreateWindowExW(WS_EX_CLIENTEDGE, L"edit", L"",
+                    WS_CHILD | WS_VISIBLE | ES_CENTER,
+                    x + labelWidth + 5, y - 2, editWidth, legitEditHeight,
+                    hWnd, reinterpret_cast<HMENU>(controlId), g_hInst, nullptr);
+        };
 
-        CreateWindowW(L"static", L"Timing Var (s):", WS_CHILD | WS_VISIBLE,
-            Layout::LEGIT_X + 470, Layout::LEGIT_Y + 25, 100, 20,
-            hWnd, nullptr, g_hInst, nullptr);
-        HWND hEditTimingVar = CreateWindowExW(WS_EX_CLIENTEDGE, L"edit", L"",
-            WS_CHILD | WS_VISIBLE | ES_CENTER,
-            Layout::LEGIT_X + 555, Layout::LEGIT_Y + 25, 50, 20,
-            hWnd, reinterpret_cast<HMENU>(ID_EDIT_LEGIT_TIMING_VAR), g_hInst, nullptr);
+        HWND hEditDelayChance = createLegitField(0, 0, L"Delay Chance:", 110, 70, ID_EDIT_LEGIT_DELAY_CHANCE);
+        HWND hEditSkipChance = createLegitField(1, 0, L"Skip Chance:", 105, 70, ID_EDIT_LEGIT_SKIP_CHANCE);
+        HWND hEditTimingVar = createLegitField(2, 0, L"Timing Var (s):", 120, 60, ID_EDIT_LEGIT_TIMING_VAR);
+        HWND hEditDelayMin = createLegitField(0, 1, L"Delay Min (s):", 115, 70, ID_EDIT_LEGIT_DELAY_MIN);
+        HWND hEditDelayMax = createLegitField(1, 1, L"Delay Max (s):", 115, 70, ID_EDIT_LEGIT_DELAY_MAX);
 
-        CreateWindowW(L"static", L"Delay Min (s):", WS_CHILD | WS_VISIBLE,
-            Layout::LEGIT_X + 140, Layout::LEGIT_Y + 55, 95, 20,
-            hWnd, nullptr, g_hInst, nullptr);
-        HWND hEditDelayMin = CreateWindowExW(WS_EX_CLIENTEDGE, L"edit", L"",
-            WS_CHILD | WS_VISIBLE | ES_CENTER,
-            Layout::LEGIT_X + 235, Layout::LEGIT_Y + 55, 60, 20,
-            hWnd, reinterpret_cast<HMENU>(ID_EDIT_LEGIT_DELAY_MIN), g_hInst, nullptr);
-
-        CreateWindowW(L"static", L"Delay Max (s):", WS_CHILD | WS_VISIBLE,
-            Layout::LEGIT_X + 300, Layout::LEGIT_Y + 55, 95, 20,
-            hWnd, nullptr, g_hInst, nullptr);
-        HWND hEditDelayMax = CreateWindowExW(WS_EX_CLIENTEDGE, L"edit", L"",
-            WS_CHILD | WS_VISIBLE | ES_CENTER,
-            Layout::LEGIT_X + 395, Layout::LEGIT_Y + 55, 60, 20,
-            hWnd, reinterpret_cast<HMENU>(ID_EDIT_LEGIT_DELAY_MAX), g_hInst, nullptr);
-
+        int infoBtnY = legitBaseY + 1 * (legitRowHeight + legitRowGap) - 2;
         HWND hBtnLegitInfo = CreateWindowW(L"button", L"Info",
-            WS_CHILD | WS_VISIBLE,
-            Layout::LEGIT_X + 470, Layout::LEGIT_Y + 55, 60, 20,
+            WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+            legitColX[2] + 5, infoBtnY, 80, 24,
             hWnd, reinterpret_cast<HMENU>(ID_BTN_LEGIT_INFO), g_hInst, nullptr);
 
         {
@@ -1234,12 +1226,12 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         int logY = SY(Layout::LOG_Y);
         int logW = SX(Layout::LOG_W);
         int logH = SY(Layout::LOG_H);
-        RECT rcClient{}; GetClientRect(hWnd, &rcClient);
+        RECT rcClient{};
+        GetClientRect(hWnd, &rcClient);
         int margin = SY(10);
-        if (logY + logH > rcClient.bottom - margin) {
-            int minH = SY(110);
-            int fitH = rcClient.bottom - margin - logY;
-            logH = (fitH > minH ? fitH : minH);
+        int available = rcClient.bottom - margin - logY;
+        if (available > 0 && logH > available) {
+            logH = available;
         }
         CreateWindowW(L"button", L"Log",
             WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
