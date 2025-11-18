@@ -135,7 +135,7 @@ namespace Layout {
     static const int LEGIT_X = 260;
     static const int LEGIT_Y = CFG_Y + CFG_H + 5;
     static const int LEGIT_W = 600;
-    static const int LEGIT_H = 120;
+    static const int LEGIT_H = 140;
 
     // Details group
     static const int DET_X = 260;
@@ -1174,8 +1174,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         const int legitEditHeight = 22;
         const int legitColX[] = {
             Layout::LEGIT_X + 140,
-            Layout::LEGIT_X + 330,
-            Layout::LEGIT_X + 520
+            Layout::LEGIT_X + 360
         };
 
         auto createLegitField = [&](int columnIndex, int rowIndex,
@@ -1192,15 +1191,15 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         };
 
         HWND hEditDelayChance = createLegitField(0, 0, L"Delay Chance:", 110, 70, ID_EDIT_LEGIT_DELAY_CHANCE);
-        HWND hEditSkipChance = createLegitField(1, 0, L"Skip Chance:", 105, 70, ID_EDIT_LEGIT_SKIP_CHANCE);
-        HWND hEditTimingVar = createLegitField(2, 0, L"Timing Var (s):", 120, 60, ID_EDIT_LEGIT_TIMING_VAR);
-        HWND hEditDelayMin = createLegitField(0, 1, L"Delay Min (s):", 115, 70, ID_EDIT_LEGIT_DELAY_MIN);
-        HWND hEditDelayMax = createLegitField(1, 1, L"Delay Max (s):", 115, 70, ID_EDIT_LEGIT_DELAY_MAX);
+        HWND hEditSkipChance = createLegitField(1, 0, L"Skip Chance:", 110, 70, ID_EDIT_LEGIT_SKIP_CHANCE);
+        HWND hEditDelayMin = createLegitField(0, 1, L"Delay Min (s):", 120, 70, ID_EDIT_LEGIT_DELAY_MIN);
+        HWND hEditDelayMax = createLegitField(1, 1, L"Delay Max (s):", 120, 70, ID_EDIT_LEGIT_DELAY_MAX);
+        HWND hEditTimingVar = createLegitField(0, 2, L"Timing Var (sec):", 130, 70, ID_EDIT_LEGIT_TIMING_VAR);
 
-        int infoBtnY = legitBaseY + 1 * (legitRowHeight + legitRowGap) - 2;
+        int infoBtnY = legitBaseY + 2 * (legitRowHeight + legitRowGap) - 2;
         HWND hBtnLegitInfo = CreateWindowW(L"button", L"Info",
             WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-            legitColX[2] + 5, infoBtnY, 80, 24,
+            legitColX[1] + 5, infoBtnY, 110, 24,
             hWnd, reinterpret_cast<HMENU>(ID_BTN_LEGIT_INFO), g_hInst, nullptr);
 
         {
@@ -1859,9 +1858,15 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         case ID_BTN_LEGIT_INFO:
             if (code == BN_CLICKED) {
-                MessageBoxA(hWnd,
-                    "Legit Mode:\n- Delay Chance: fraction in [0,1] to add extra delay.\n- Delay Min/Max: seconds range for extra delay.\n- Skip Chance: fraction in [0,1] to skip a note press.\n- Timing Variation: seconds of jitter added to press times.\n\nRecommended ranges:\nChance 0.0–0.2, Delay 0.05–0.25s, Skip 0.0–0.05, Variation 0.0–0.15s.",
-                    "Legit Mode Help",
+                MessageBoxW(hWnd,
+                    L"Legit Mode:\n"
+                    L"- Delay Chance: fraction in [0,1] to add extra delay.\n"
+                    L"- Delay Min/Max: seconds range for the extra delay.\n"
+                    L"- Skip Chance: fraction in [0,1] to skip a note press.\n"
+                    L"- Timing Variation: seconds of jitter added to note timing.\n\n"
+                    L"Recommended ranges:\n"
+                    L"Chance 0.0-0.2, Delay 0.05-0.25s, Skip 0.0-0.05, Variation 0.0-0.15s.",
+                    L"Legit Mode Help",
                     MB_OK | MB_ICONINFORMATION);
             }
             break;

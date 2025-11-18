@@ -1,4 +1,8 @@
 {
+    "AUTOPLAYER_TIMING_ACCURACY": {
+        "MAX_PASSES": 20,
+        "MEASURE_SEC": 1.0
+    },
     "AUTO_TRANSPOSE": {
         "ENABLED": false,
         "TRANSPOSE_DOWN_KEY": "VK_DOWN",
@@ -172,15 +176,19 @@
     "LEGIT_MODE_SETTINGS": {
         "ENABLED": false,
         "EXTRA_DELAY_CHANCE": 0.05,
-        "EXTRA_DELAY_MAX": 0.2,
-        "EXTRA_DELAY_MIN": 0.05,
-        "NOTE_SKIP_CHANCE": 0.02,
-        "TIMING_VARIATION": 0.1
+        "EXTRA_DELAY_MAX": 0.0,
+        "EXTRA_DELAY_MIN": 0.0,
+        "NOTE_SKIP_CHANCE": 0.0,
+        "TIMING_VARIATION": 0.0
     },
     "MIDI_SETTINGS": {
         "DETECT_DRUMS": true
     },
+    "PLAYLIST_FILES": [],
     "STACKED_NOTE_HANDLING_MODE": "LIFO",
+    "UI_SETTINGS": {
+        "alwaysOnTop": false
+    },
     "VOLUME_SETTINGS": {
         "ADJUSTMENT_INTERVAL_MS": 50,
         "INITIAL_VOLUME": 100,
