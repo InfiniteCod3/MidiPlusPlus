@@ -1,3 +1,6 @@
+# Build outputs
 /x64
 /MIDI++/x64/Release
-/.vs/MIDI++/v18/
+
+# Visual Studio cache/options
+.vs/
